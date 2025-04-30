@@ -1,6 +1,9 @@
+#__________________________SETUP___________________________________
 # type: ignore #code of the poject
 #Lynn Limbach & Max Henrotin
 import sys
+import numpy as np
+import Levenshtein
 
 #retreive the filepath from the desired .fastq file
 file_path = ""      # fastq/J29_B_CE_IonXpress_005.fastq  is one example of argument
@@ -9,6 +12,8 @@ if len(sys.argv) == 2:
 else:
     print("Please provide the path of the FASTQ file.")
     sys.exit(1)
+
+#____________________HELPERS FOR SEQUENCES EXTRACTION___________________________
 
 # this method extract in an array all the ACTG sequences from the .fastq file
 def extract_sequences(path):
@@ -50,9 +55,20 @@ def print_sequence_list(sequences):
         print("- " + seq + "\n")
 
 
-#Execution
+#__________________________________METHODS FOR THE ALGORITHM____________________________
+
+def get_centroid_levenshtein(sequences):
+    n = len(sequences)
+    distances = np.zeros(n)
+    for i, s1 in enumerate(sequences):
+        distances[i] = sum(Levenshtein.distance(s1, s2) for s2 in sequences)
+    return sequences[np.argmin(distances)]
+
+#_________________________EXECUTION__________________________________
+#extraction
 sequences = extract_sequences(file_path)
 sequences296 = keep_seq_lenght(sequences, 296, 296)
 print_sequence_list(sequences296)
 print(len(sequences))
 print(len(sequences296))
+print(get_centroid_levenshtein(sequences296))   #is working in finding the principal gene sequence for J29

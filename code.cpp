@@ -1,4 +1,5 @@
 //code of the poject of Lynn Limbach & Max Henrotin
+#include <ostream>
 #include <spoa/spoa.hpp>    //use chatgpt to see how to install spoa library on your computer (use linux)
 #include <iostream>
 #include <fstream>
@@ -7,6 +8,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <cmath> 
+#include <algorithm>
 using namespace std;
 using namespace spoa;  
 
@@ -57,7 +59,7 @@ void print_sequence_list(const vector<string>& sequences) {
 
 //this method prints an histogram of the number of sequences of each size
 void print_sequence_size_histogram(const vector<string>& sequences) {
-    vector<int> sizeCount(500, 0);  // L'indice 0 sera ignoré, tailles de 1 à 500
+    vector<int> sizeCount(500, 0); 
 
     // iterate over each sequences and incrementate the corresponding size
     for (const auto& seq : sequences) {
@@ -81,13 +83,13 @@ void print_sequence_size_histogram(const vector<string>& sequences) {
 }
 
 //__________________________________METHODS FOR THE ALGORITHM____________________________
-//k-medoid algorithm --> using SPOA
 
 // function that align all the sequences from the argument
 vector<string> generate_msa(const vector<string>& sequences) {
   
     auto alignment_engine = spoa::AlignmentEngine::Create(
-        spoa::AlignmentType::kNW, 3, -5, -3);  // linear gaps   (3 : Score de correspondance entre les bases. / -5 : Pénalité pour une ouverture de gap. / -3 : Pénalité pour une extension de gap.)
+        //we use kSW because its more robust with such diverse sequences than kNW
+        spoa::AlignmentType::kSW, 2, -4, -6, -1);  // linear gaps   (3 : Score de correspondance entre les bases. / -5 : Pénalité pour une ouverture de gap. / -3 : Pénalité pour une extension de gap.)
   
     spoa::Graph graph{};    //to store alignment sequences
   
@@ -110,7 +112,8 @@ vector<string> generate_msa(const vector<string>& sequences) {
 string find_consensus(const vector<string>& sequences) {
 
     auto alignment_engine = spoa::AlignmentEngine::Create(
-        spoa::AlignmentType::kNW, 3, -5, -3);  // linear gaps   (3 : Score de correspondance entre les bases. / -5 : Pénalité pour une ouverture de gap. / -3 : Pénalité pour une extension de gap.)
+        //we use kSW because its more robust with such diverse sequences than kNW
+        spoa::AlignmentType::kSW, 2, -4, -6, -1);  // linear gaps   (3 : Score de correspondance entre les bases. / -5 : Pénalité pour une ouverture de gap. / -3 : Pénalité pour une extension de gap.)
   
     spoa::Graph graph{};    //to store alignment sequences
   
@@ -124,6 +127,85 @@ string find_consensus(const vector<string>& sequences) {
     string consensus = graph.GenerateConsensus();
 
     return consensus;
+}
+
+
+//find the k centroids:
+
+//distance between two string
+int levenshtein_distance(const std::string& s1, const std::string& s2) {
+    int m = s1.size();
+    int n = s2.size();
+    std::vector<std::vector<int>> dp(m + 1, std::vector<int>(n + 1));
+
+    for (int i = 0; i <= m; ++i) dp[i][0] = i;
+    for (int j = 0; j <= n; ++j) dp[0][j] = j;
+
+    for (int i = 1; i <= m; ++i) {
+        for (int j = 1; j <= n; ++j) {
+            if (s1[i - 1] == s2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                dp[i][j] = std::min({
+                    dp[i - 1][j] + 1,    // suppression
+                    dp[i][j - 1] + 1,    // insertion
+                    dp[i - 1][j - 1] + 1 // substitution
+                });
+            }
+        }
+    }
+
+    return dp[m][n];
+}
+    
+//k-mean clustering
+vector<string> k_centroid(vector<string> sequences, int k){
+
+    vector<string> msa_sequences = generate_msa(sequences);
+
+    //initialize clusters
+    std::vector<std::vector<std::string>> clusters(k); 
+    
+    //initialize centroids
+    vector<string> centroids(k);
+    
+    for(int i=0; i<k;++i){
+        centroids[i]=msa_sequences[i];   //select the two first sequences as initial clusters (so its a sort of random pick)
+    }
+
+
+    //10 iterations of k means
+    int nbr_step = 10;
+    for(int n = 0;n<nbr_step;n++){
+
+        cout<<"K-clustering STEP : "<<n+1<<"/"<<nbr_step<<endl;
+
+        //put each sequence in its corresponding cluster
+        for (const auto& seq : msa_sequences) {
+            int min_dist = std::numeric_limits<int>::max(); //virtual infinity...
+            int assigned_cluster = -1;
+        
+            for (int i = 0; i < k; ++i) {
+                int dist = levenshtein_distance(seq, centroids[i]);     //didnt found any distance method in spoa...
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    assigned_cluster = i;
+                }
+            }
+            clusters[assigned_cluster].push_back(seq);
+        }
+
+        //new centroids
+        for(int i=0; i<k;++i){
+            centroids[i]=find_consensus(clusters[i]); 
+        }
+
+        for (auto& cluster : clusters) {
+            cluster.clear();
+        }
+    }
+
+    return centroids;
 }
 
 //_________________________EXECUTION__________________________________
@@ -157,20 +239,28 @@ int main(int argc, char* argv[]) {
 
 
     //consensus
-    cout << endl << "_______CONSENSUS_OVER_ALL_SEQ__________" << endl;  //for J29B there is 2 errors in the principal consensus (proving what has been estimated with the histogram)
-    string consensus = find_consensus(sequences);
-    cout << consensus << endl << endl;
+    cout << endl << "_______CONSENSUS_OVER_ALL_SEQ__________" << endl;  //for J29B there is one error in the principal consensus (proving what has been estimated with the histogram)
+    //string consensus = find_consensus(sequences); //long to calculate
+    //cout << consensus << endl << endl;
     cout << endl << "_______CONSENSUS_OVER_SIZE_296_SEQ__________" << endl; //for J29B correct consensus 
     string consensus296 = find_consensus(sequences296);
     cout << consensus296 << endl << endl;
     cout << endl << "_______CONSENSUS_OVER_ALL_SEQ_FROM_290_TO_305__________" << endl;  //for J29B correct consensus
-    string consensus290_305 = find_consensus(sequences290_305);
-    cout << consensus290_305 << endl << endl;
+    //string consensus290_305 = find_consensus(sequences290_305);
+    //cout << consensus290_305 << endl << endl;
 
-
-    //alignment
+    //alignment (to see visually how it looks)
     vector<string> msa = generate_msa(sequences296);
     //print_sequence_list(msa);
+
+    cout<<endl<<"2-Clustering over all sequences of lenght 296 :"<<endl;
+    //vector<string> sequences296_2_centroid = k_centroid(sequences296, 2);
+    //print_sequence_list(sequences296_2_centroid);
+    
+    cout<<endl<<"3-Clustering over all sequences of lenght from 290 to 305 :"<<endl;
+    vector<string> sequences290_305_3_centroid = k_centroid(sequences290_305, 2);
+    print_sequence_list(sequences290_305_3_centroid);
+
 
     return 0;
 }

@@ -6,6 +6,7 @@
 #include <string>
 #include <cctype>
 #include <cstdlib>
+#include <cmath> 
 using namespace std;
 using namespace spoa;  
 
@@ -51,6 +52,31 @@ vector<string> keep_seq_length(const vector<string>& sequences, int minLength, i
 void print_sequence_list(const vector<string>& sequences) {
     for (const string& seq : sequences) {
         cout << "- " << seq << endl << endl;
+    }
+}
+
+//this method prints an histogram of the number of sequences of each size
+void print_sequence_size_histogram(const vector<string>& sequences) {
+    vector<int> sizeCount(500, 0);  // L'indice 0 sera ignoré, tailles de 1 à 500
+
+    // iterate over each sequences and incrementate the corresponding size
+    for (const auto& seq : sequences) {
+        int size = seq.length();
+        if (size >= 1 && size <= 400) {
+            sizeCount[size]++;
+        }
+    }
+
+    // print the histogram
+    for (int i = 1; i < 400; ++i) {
+        cout << "Size " << i << " : ";
+        
+        int numHashes = ceil(sizeCount[i] / 10.0);
+        for (int j = 0; j < numHashes; ++j) {
+            cout << "#";
+        }
+
+        cout << endl;
     }
 }
 
@@ -117,29 +143,34 @@ int main(int argc, char* argv[]) {
     //extract sequences
     string file_path = argv[1];
     vector<string> sequences = extract_sequences(file_path);
+
+    //sequences size histogram
+    print_sequence_size_histogram(sequences);
+    
+    //with the histogram we can see that we can focus essencially on sequences from size 290 to 305 (with max at 296) and that the rest might be mistakes that will compromise the data
     vector<string> sequences296 = keep_seq_length(sequences, 296, 296);
-    vector<string> sequences250_350 = keep_seq_length(sequences, 250, 350);
-    cout << sequences.size() << "sequences in total" << endl;
-    cout << sequences296.size() << "sequences of size 296" << endl;
-    cout << sequences250_350.size() << "sequences of a size from 250 to 350" << endl;
+    vector<string> sequences290_305 = keep_seq_length(sequences, 250, 350);
+    cout << endl;
+    cout << sequences.size() << " sequences in total" << endl;
+    cout << sequences296.size() << " sequences of size 296" << endl;
+    cout << sequences290_305.size() << " sequences of a size from 290 to 305" << endl;
+
+
+    //consensus
+    cout << endl << "_______CONSENSUS_OVER_ALL_SEQ__________" << endl;  //for J29B there is 2 errors in the principal consensus (proving what has been estimated with the histogram)
+    string consensus = find_consensus(sequences);
+    cout << consensus << endl << endl;
+    cout << endl << "_______CONSENSUS_OVER_SIZE_296_SEQ__________" << endl; //for J29B correct consensus 
+    string consensus296 = find_consensus(sequences296);
+    cout << consensus296 << endl << endl;
+    cout << endl << "_______CONSENSUS_OVER_ALL_SEQ_FROM_290_TO_305__________" << endl;  //for J29B correct consensus
+    string consensus290_305 = find_consensus(sequences290_305);
+    cout << consensus290_305 << endl << endl;
 
 
     //alignment
     vector<string> msa = generate_msa(sequences296);
     //print_sequence_list(msa);
-
-
-    //consensus
-    cout << endl << "_______CONSENSUS_OVER_SIZE_296_SEQ__________" << endl; //for J29B correct consensus 
-    string consensus296 = find_consensus(sequences296);
-    cout << consensus296 << endl << endl;
-    cout << endl << "_______CONSENSUS_OVER_ALL_SEQ__________" << endl;  //for J29B there is 2 errors in the principal consensus
-    string consensus = find_consensus(sequences);
-    cout << consensus << endl << endl;
-    cout << endl << "_______CONSENSUS_OVER_ALL_SEQ_FROM_250_TO_350__________" << endl;  //for J29B there is no errors in the principal consensus
-    string consensus250_350 = find_consensus(sequences250_350);
-    cout << consensus250_350 << endl << endl;
-
 
     return 0;
 }

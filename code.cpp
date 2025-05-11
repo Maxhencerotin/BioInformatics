@@ -53,7 +53,7 @@ void print_sequence_list(const vector<string>& sequences) {
 }
 
 //__________________________________METHODS FOR THE ALGORITHM____________________________
-
+//k-medoid algorithm --> using SPOA
 
 //_________________________EXECUTION__________________________________
 int main(int argc, char* argv[]) {

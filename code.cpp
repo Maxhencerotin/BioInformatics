@@ -103,7 +103,7 @@ vector<string> generate_msa(const vector<string>& sequences) {
   
     auto alignment_engine = spoa::AlignmentEngine::Create(
         //we use kSW because its more robust with such diverse sequences than kNW
-        spoa::AlignmentType::kSW, 2, -4, -6, -1);  // linear gaps   (3 : Score de correspondance entre les bases. / -5 : Pénalité pour une ouverture de gap. / -3 : Pénalité pour une extension de gap.)
+        spoa::AlignmentType::kSW,  2, -4, -6, -1);  // linear gaps   (3 : Score de correspondance entre les bases. / -5 : Pénalité pour une ouverture de gap. / -3 : Pénalité pour une extension de gap.)
   
     spoa::Graph graph{};    //to store alignment sequences
   
@@ -127,7 +127,7 @@ string find_consensus(const vector<string>& sequences) {
 
     auto alignment_engine = spoa::AlignmentEngine::Create(
         //we use kSW because its more robust with such diverse sequences than kNW
-        spoa::AlignmentType::kSW, 2, -4, -6, -1);  // linear gaps   (3 : Score de correspondance entre les bases. / -5 : Pénalité pour une ouverture de gap. / -3 : Pénalité pour une extension de gap.)
+        spoa::AlignmentType::kSW,  2, -4, -6, -1);  // linear gaps   (3 : Score de correspondance entre les bases. / -5 : Pénalité pour une ouverture de gap. / -3 : Pénalité pour une extension de gap.)
   
     spoa::Graph graph{};    //to store alignment sequences
   
@@ -358,7 +358,7 @@ int main(int argc, char* argv[]) {
     
     //with the histogram we can see that we can focus essencially on sequences from size 290 to 305 (with max at 296) and that the rest might be mistakes that will compromise the data
     vector<string> sequences296 = keep_seq_length(sequences, 296, 296);
-    vector<string> sequences290_305 = keep_seq_length(sequences, 250, 350);
+    vector<string> sequences290_305 = keep_seq_length(sequences, 290, 305);
     cout << endl;
     cout << sequences.size() << " sequences in total" << endl;
     cout << sequences296.size() << " sequences of size 296" << endl;
@@ -381,17 +381,16 @@ int main(int argc, char* argv[]) {
     //print_sequence_list(msa);
 
     cout<<endl<<"2-Clustering over all sequences of lenght 296 :"<<endl;
-    vector<string> sequences296_2_centroid = k_centroid(sequences296, 2, 10); //J29B : 1st variant ok, 2nd variant ok / J30B : 1st variant ok, 2nd variant 1err (with hamming distance)
-    print_sequence_list(remove_gaps(sequences296_2_centroid));
+    //vector<string> sequences296_2_centroid = k_centroid(sequences296, 2, 10); //J29B : 1st variant ok, 2nd variant ok / J30B : 1st variant ok, 2nd variant 1err (with hamming distance)
+    //print_sequence_list(remove_gaps(sequences296_2_centroid));
 
     cout<<endl<<"3-Clustering over all sequences of lenght 296 :"<<endl;
     //vector<string> sequences296_3_centroid = k_centroid(sequences296, 3, 10); //J29B : 1st variant ok, 2nd variants ok, 3rd variant nope / J30B : 1st variant ok, 2nd variant 1 err, 3rd variant nope (with hamming distance)
     //print_sequence_list(remove_gaps(sequences296_3_centroid));
     
     cout<<endl<<"3-Clustering over all sequences of lenght from 290 to 305 :"<<endl;
-    //vector<string> sequences290_305_3_centroid = k_centroid(sequences290_305, 3, 10);   //J29B : 1st variant ok, 2nd variant 1err, 3rd variant lot of errors (SAME WITH J30B) (with hamming_distance)
+    //vector<string> sequences290_305_3_centroid = k_centroid(sequences290_305, 3, 10);   //J29B : 1st variant ok, 2nd variant 1err, 3rd variant nope / J30B : 1st variant ok, 2nd variant 1err, 3rd variant nope (with hamming_distance)
     //print_sequence_list(remove_gaps(sequences290_305_3_centroid));
-
 
     return 0;
 }

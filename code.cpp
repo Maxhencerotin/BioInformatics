@@ -264,7 +264,7 @@ vector<string> kmeanspp_init_centroids(const vector<string>& sequences, int k) {
 */
 
 //k-mean clustering
-vector<string> k_centroid(vector<string> sequences, int k, int nbr_step){
+vector<string> k_centroid(vector<string> sequences, int k, int nbr_step_max){
 
     vector<string> msa_sequences = generate_msa(sequences);
 
@@ -280,8 +280,8 @@ vector<string> k_centroid(vector<string> sequences, int k, int nbr_step){
 
 
     //nbr_step iterations of k means
-    for(int n = 0;n<nbr_step;n++){
-        cout<<"K-clustering STEP : "<<n+1<<"/"<<nbr_step<<endl;
+    for(int n = 0;n<nbr_step_max;n++){
+        cout<<"K-clustering STEP : "<<n+1<<"/"<<nbr_step_max<<endl;
 
         //put each sequence in its corresponding cluster
         size_t nbr_seq = msa_sequences.size();
@@ -291,7 +291,6 @@ vector<string> k_centroid(vector<string> sequences, int k, int nbr_step){
             const string& seq = msa_sequences[i];
             int min_dist = std::numeric_limits<int>::max(); //virtual infinity...
             int assigned_cluster = -1;
-        
             for (int j = 0; j < k; ++j) {
                 int dist = hamming_distance(seq, centroids[j]);     //didnt found any distance method in spoa...
                 if (dist < min_dist) {
@@ -370,8 +369,8 @@ int main(int argc, char* argv[]) {
     //string consensus = find_consensus(sequences); //long to calculate
     //cout << consensus << endl << endl;
     cout << endl << "_______CONSENSUS_OVER_SIZE_296_SEQ__________" << endl; //for J29B correct consensus 
-    string consensus296 = find_consensus(sequences296);
-    cout << consensus296 << endl << endl;
+    //string consensus296 = find_consensus(sequences296);
+    //cout << consensus296 << endl << endl;
     cout << endl << "_______CONSENSUS_OVER_ALL_SEQ_FROM_290_TO_305__________" << endl;  //for J29B correct consensus
     //string consensus290_305 = find_consensus(sequences290_305);
     //cout << consensus290_305 << endl << endl;
@@ -385,8 +384,9 @@ int main(int argc, char* argv[]) {
     //print_sequence_list(remove_gaps(sequences296_2_centroid));
 
     cout<<endl<<"3-Clustering over all sequences of lenght 296 :"<<endl;
-    //vector<string> sequences296_3_centroid = k_centroid(sequences296, 3, 10); //J29B : 1st variant ok, 2nd variants ok, 3rd variant nope / J30B : 1st variant ok, 2nd variant 1 err, 3rd variant nope (with hamming distance)
-    //print_sequence_list(remove_gaps(sequences296_3_centroid));
+    vector<string> sequences296_3_centroid = k_centroid(sequences296, 3, 10); //J29B : 1st variant ok, 2nd variants ok, 3rd variant nope / J30B : 1st variant ok, 2nd variant 1 err, 3rd variant nope (with hamming distance)
+    print_sequence_list(remove_gaps(sequences296_3_centroid));
+
     
     cout<<endl<<"3-Clustering over all sequences of lenght from 290 to 305 :"<<endl;
     //vector<string> sequences290_305_3_centroid = k_centroid(sequences290_305, 3, 10);   //J29B : 1st variant ok, 2nd variant 1err, 3rd variant nope / J30B : 1st variant ok, 2nd variant 1err, 3rd variant nope (with hamming_distance)

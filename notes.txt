@@ -21,3 +21,11 @@ Use only deer samples (files starting with J).
   When comparing your results to the ground truth, keep this in mind.
 
 ==> SAME PROJECT -> Petreska & Chowdhury
+
+____________________________________________________________________________________________________________________________
+
+appointment 26.5.:
+
+- try again with 6-8 clusters to avoid a randomly chosen cluster as third cluster due to error or whatever, then discard those that are not good enough
+- then compare different results aka if the small clusters are similar in the samples, cuz its a few variants for many deer rather than one variant for each deer (large cluster almost certainly correct)
+- otherwise its so far good, its not completely solvable anyway, not expected to find third cluster and one error in second cluster is ok (just a prank bro)

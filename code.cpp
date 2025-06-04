@@ -269,7 +269,7 @@ vector<string> k_centroid(vector<string> sequences, int k, int nbr_step_max){
     vector<string> msa_sequences = generate_msa(sequences);
 
     //initialize clusters
-    std::vector<std::vector<std::string>> clusters(k); 
+    vector<vector<string>> clusters(k); 
     
     //initialize centroids  --> MAYBE TRY K-MEAN++ for a better initialization and thus prevent empty clusters
     vector<string> centroids(k);
@@ -301,7 +301,7 @@ vector<string> k_centroid(vector<string> sequences, int k, int nbr_step_max){
             clusters[assigned_cluster].push_back(seq);
         }
 
-        //new centroids //!!! WE COULD CHECK IF THERE IS NO CHANGE IN CENTROID THEN STOP LOOPING
+        //new centroids
         bool converged = true;
         for(int i=0; i<k;++i){
             string new_centroid = find_consensus(remove_gaps(clusters[i])); 
@@ -320,8 +320,12 @@ vector<string> k_centroid(vector<string> sequences, int k, int nbr_step_max){
                 converged = false;
             }
         }
+        //IF THERE IS NO CHANGE IN CENTROID THEN STOP LOOPING
         if(converged){
             cout<<"K-clustering has converged !!!"<<endl<<endl;
+            for(int i = 0; i<k; ++i){
+                cout<<"cluster no "<<i+1<<" : "<<clusters[i].size()<<endl;
+            }
             return centroids;
         }
 

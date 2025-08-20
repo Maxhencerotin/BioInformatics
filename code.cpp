@@ -11,6 +11,7 @@
 #include <cmath> 
 #include <algorithm>
 #include <random>
+#include <chrono>
 using namespace std;
 using namespace spoa;  
 
@@ -347,6 +348,8 @@ vector<string> k_centroid(vector<string> sequences, int k, int nbr_step_max){
 
 
 int main(int argc, char* argv[]) {
+    auto startTime = std::chrono::high_resolution_clock::now();
+
     if (argc != 2) {    //fastq/J29_B_CE_IonXpress_005.fastq  is one example of argument
         cerr << "Please provide the path of the FASTQ file." << endl;
         return 1;
@@ -388,7 +391,7 @@ int main(int argc, char* argv[]) {
     //print_sequence_list(remove_gaps(sequences296_2_centroid));
 
     cout<<endl<<"3-Clustering over all sequences of lenght 296 :"<<endl;
-    vector<string> sequences296_3_centroid = k_centroid(sequences296, 3, 10); //J29B : 1st variant ok, 2nd variants ok, 3rd variant nope / J30B : 1st variant ok, 2nd variant 1 err, 3rd variant nope (with hamming distance)
+    vector<string> sequences296_3_centroid = k_centroid(sequences296, 8, 10); //J29B : 1st variant ok, 2nd variants ok, 3rd variant nope / J30B : 1st variant ok, 2nd variant 1 err, 3rd variant nope (with hamming distance)
     print_sequence_list(remove_gaps(sequences296_3_centroid));
 
     
@@ -396,5 +399,9 @@ int main(int argc, char* argv[]) {
     //vector<string> sequences290_305_3_centroid = k_centroid(sequences290_305, 3, 10);   //J29B : 1st variant ok, 2nd variant 1err, 3rd variant nope / J30B : 1st variant ok, 2nd variant 1err, 3rd variant nope (with hamming_distance)
     //print_sequence_list(remove_gaps(sequences290_305_3_centroid));
 
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = endTime - startTime;
+    cout<<"TOTAL TIME : "<<duration.count()<<" seconds"<<endl;
     return 0;
 }
